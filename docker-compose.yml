@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:6
+    volumes: [mongo_data:/data/db]
+  api:
+    build: ./backend
+    ports: ['5001:5000']
+    env_file: .env
+    depends_on: [mongo]
+  frontend:
+    build: ./frontend
+    ports: ['3000:5173']
+    depends_on: [api]
+volumes:
+  mongo_data: {}
