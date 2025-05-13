@@ -1,24 +1,30 @@
-import { Schema, model } from 'mongoose'
+import { Schema, model, Document } from 'mongoose'
 import bcrypt from 'bcrypt'
 
-export interface User extends Document { 
+export interface IUser extends Document {
   email: string
-  password: string
-  compare(pwd: string): Promise<boolean>
+  password?: string
+  googleId?: string
+  compare?(pwd: string): Promise<boolean>
 }
 
-const userSchema = new Schema<User>({
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
+const userSchema = new Schema<IUser>({
+  email:     { type: String, required: true, unique: true },
+  password:  {
+    type: String,
+    required: function(this: IUser) { return !this.googleId }
+  },
+  googleId:  { type: String }
 })
 
 userSchema.pre('save', async function () {
-  if (!this.isModified('password')) return
-  this.password = await bcrypt.hash(this.password, 10)
+  if (this.password && this.isModified('password')) {
+    this.password = await bcrypt.hash(this.password, 10)
+  }
 })
 
 userSchema.methods.compare = function (pwd: string) {
-  return bcrypt.compare(pwd, this.password)
+  return bcrypt.compare(pwd, this.password!)
 }
 
-export default model<User>('User', userSchema)
+export default model<IUser>('User', userSchema)

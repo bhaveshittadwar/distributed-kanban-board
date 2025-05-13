@@ -1,7 +1,8 @@
-import session from 'express-session'
-import passport from './auth/passport'
-import User from './models/User'
 import express, { Request, Response, NextFunction } from 'express'
+import session from 'express-session'
+import passport from './auth/passport' // local
+import './auth/google' // google
+import User from './models/User'
 
 import mongoose from 'mongoose'
 
@@ -42,6 +43,20 @@ app.post('/login',
   passport.authenticate('local'),
   (req: Request, res: Response, next: NextFunction) => {
     res.json({ email: (req.user as any).email })
+  }
+)
+
+app.get(
+  '/auth/google',
+  passport.authenticate('google', { scope: ['email'] })
+)
+
+// Google OAuth callback
+app.get(
+  '/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/' }),
+  (_req: Request, res: Response) => {
+    res.redirect('http://localhost:3000')
   }
 )
 
