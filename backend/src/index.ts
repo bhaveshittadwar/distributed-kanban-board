@@ -6,6 +6,7 @@ import User from './models/User'
 // routers
 import columnsRouter from './routes/columns'
 import cardsRouter from './routes/cards'
+import boardRouter from './routes/board'
 
 import mongoose from 'mongoose'
 
@@ -65,5 +66,6 @@ app.get(
 
 app.use('/columns', columnsRouter)
 app.use('/cards', cardsRouter)
+app.use('/board', boardRouter)
 
 app.listen(5000, () => console.log('API listening on 5000'))
