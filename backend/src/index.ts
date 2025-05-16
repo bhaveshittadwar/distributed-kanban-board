@@ -3,6 +3,9 @@ import session from 'express-session'
 import passport from './auth/passport' // local
 import './auth/google' // google
 import User from './models/User'
+// routers
+import columnsRouter from './routes/columns'
+import cardsRouter from './routes/cards'
 
 import mongoose from 'mongoose'
 
@@ -60,4 +63,7 @@ app.get(
   }
 )
 
-app.listen(5000, () => console.log('API listening on 5000'))
+app.use('/columns', columnsRouter)
+app.use('/cards', cardsRouter)
+
+app.listen(5000, () => console.log('API listening on 5000'))
