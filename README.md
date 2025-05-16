@@ -18,6 +18,7 @@ This application is a real‑time collaborative Kanban board. Authenticated user
 - **Auth:**  
   1. Local (email/password via passport‑local)  
   2. Google OAuth 2.0  
+- **Concurrency:** Optimistic versioning on Columns & Cards (409 on conflict)  
 - **Dev setup:** Docker Compose orchestrating:
   - MongoDB  
   - API service (host 5001 → container 5000)  
@@ -32,6 +33,7 @@ This application is a real‑time collaborative Kanban board. Authenticated user
 ## Environment (`.env` in project root)
 ~~~bash
 MONGO_URL=mongodb://mongo:27017/kanban
+SESSION_SECRET=your_session_secret
 GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET
 GOOGLE_CALLBACK_URL=http://localhost:5001/auth/google/callback
@@ -80,7 +82,7 @@ docker-compose up --build -d
 
 ## Next Steps
 - Define Mongoose schemas & CRUD for **Columns** and **Cards**  
-- Build `<Board>`, `<Column>`, `<Card>` UI components  
+- Expose `/board` endpoint aggregating columns+cards  
 - Integrate Socket.io events for real‑time updates  
 - Prepare code for drag‑and‑drop integration  
 
