@@ -11,7 +11,7 @@ passport.use(
         if (!user) {
           return done(null, false, { message: 'Incorrect email.' })
         }
-        const ok = await user.compare(password)
+        const ok = await user.compare!(password)
         if(!ok) return done(null, false, { message: 'Incorrect password.' })
         return done(null, user)
       } catch (error) {
