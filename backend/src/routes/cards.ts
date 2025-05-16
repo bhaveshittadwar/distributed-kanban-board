@@ -26,12 +26,20 @@ router.get('/column/:columnId', async (req: Request, res: Response, next: NextFu
 // update
 router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const card = await Card.findByIdAndUpdate(req.params.id, req.body, {new: true})
-        res.json(card)
-    } catch (error) {
-        next(error)
+      const { __v, ...update } = req.body
+      const card = await Card.findOneAndUpdate(
+        { _id: req.params.id, __v },
+        { ...update, $inc: { __v: 1 } },
+        { new: true }
+      )
+      if (!card) {
+        res.status(409).json({ message: 'Version conflict' })
+      }
+      res.json(card)
+    } catch (err) {
+      next(err)
     }
-})
+  })
 
 // delete
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {

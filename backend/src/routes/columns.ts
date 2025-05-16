@@ -25,13 +25,22 @@ router.get('/', async(req: Request, res: Response, next: NextFunction) => {
 );
 
 // update
+// IMP: __v is the versionKey maintained by mongo for each doc
 router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const col = await Column.findByIdAndUpdate(req.params.id, req.body, { new: true })
+        const { __v, ...update } = req.body
+        const col = await Column.findOneAndUpdate(
+          { _id: req.params.id, __v },     // match v
+          { ...update, $inc: { __v: 1 } }, // bump v
+          { new: true }
+        )
+        if (!col) {
+        res.status(409).json({ message: 'Version conflict' })
+        }
         res.json(col)
-    } catch (err) {
-        next(err) 
-    }
+      } catch (err) {
+        next(err)
+      }
 })
 
 // delete
