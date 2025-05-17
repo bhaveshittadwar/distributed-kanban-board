@@ -2,12 +2,19 @@
 
 A Node.js + Express + TypeScript backend for a real-time collaborative Kanban board MVP.
 
-## Overview  
-This service provides:  
+---
+
+## Overview
+
+This service provides:
+
 - User authentication (email/password via passport-local, Google OAuth 2.0)  
 - CRUD operations for Columns and Cards  
 - A consolidated `/board` endpoint returning all columns with their cards  
-- **Optimistic concurrency control** using Mongoose’s version key (`__v`), ensuring safe multi-user updates  
+- **Optimistic concurrency control** using Mongoose’s version key (`__v`)  
+- **Real-time sync foundation** with Socket.io
+
+---
 
 ## Environment
 
@@ -21,6 +28,8 @@ GOOGLE_CALLBACK_URL=http://localhost:5001/auth/google/callback
 SESSION_SECRET=your_session_secret
 ~~~
 
+---
+
 ## Installation & Run
 
 ~~~bash
@@ -33,39 +42,61 @@ npm start           # runs dist/index.js
 docker-compose up --build api
 ~~~
 
+---
+
 ## API Endpoints
 
-### Auth  
+### Auth
+
 - `POST /signup`  
   - Body: `{ email: string, password: string }`  
-  - Response: `{ email: string }`  
+  - Response: `{ email: string }`
+
 - `POST /login`  
   - Body: `{ email: string, password: string }`  
-  - Response: `{ email: string }`  
-- `GET /auth/google` → starts Google OAuth  
-- `GET /auth/google/callback` → Google redirects here, then redirects to frontend
+  - Response: `{ email: string }`
 
-### Columns  
+- `GET /auth/google` → starts Google OAuth  
+- `GET /auth/google/callback` → Google redirects here, then forwards to frontend
+
+---
+
+### Columns
+
 - `POST /columns`  
 - `GET /columns`  
-- `PUT  /columns/:id` *(optimistic versioning: client must include last-seen `__v`)*  
+- `PUT  /columns/:id` *(optimistic versioning — client must include last-seen `__v`)*  
 - `DELETE /columns/:id`
 
-### Cards  
+---
+
+### Cards
+
 - `POST /cards`  
 - `GET  /cards/column/:columnId`  
-- `PUT  /cards/:id` *(optimistic versioning: client must include last-seen `__v`)*  
+- `PUT  /cards/:id` *(optimistic versioning — client must include last-seen `__v`)*  
 - `DELETE /cards/:id`
 
-### Board  
+---
+
+### Board
+
 - `GET /board`  
-  Returns an array of columns each with a `cards` array.
+  Returns an array of columns, each with a `cards` array.
 
-## Optimistic Concurrency Control  
-- Update routes (`PUT`) match on the client’s last-seen `__v` and use `$inc: { __v: 1 }`  
-- Prevents silent overwrites and handles multi-user conflicts with **409 Conflict** responses
+---
 
-## Next Steps  
-- Integrate Socket.io for live syncing  
-- Add request validation and centralized error handling  
-- Write E2E tests (e.g. using Jest + Supertest)  
+## Optimistic Concurrency Control
+
+- Update routes (`PUT`) match on the client’s last-seen `__v`
+- DB increments version with `$inc: { __v: 1 }` only on successful match
+- Prevents silent overwrites
+- Returns `409 Conflict` if there's a version mismatch
+
+---
+
+## Real-time Events (via Socket.io)
+
+- Server initialized Socket.io alongside Express
+- `/test-socket` emits `test-event` to all connected clients
+- Clients listen on `test-event` to confirm real-time capability
