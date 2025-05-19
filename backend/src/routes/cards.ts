@@ -7,6 +7,7 @@ const router = Router();
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const card = await Card.create(req.body)
+        req.app.get('io').emit('card:created', card)
         res.status(201).json(card)
     } catch (error) {
         next(error)
@@ -34,7 +35,9 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
       )
       if (!card) {
         res.status(409).json({ message: 'Version conflict' })
+        return
       }
+      req.app.get('io').emit('card:updated', card)
       res.json(card)
     } catch (err) {
       next(err)
@@ -45,6 +48,8 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
     try {
         await Card.findByIdAndDelete(req.params.id)
+        req.app.get('io').emit('card:deleted', { id: req.params.id })
+        res.status(204).end()
     } catch (error) {
         next(error)
     }
