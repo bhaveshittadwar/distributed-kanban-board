@@ -18,6 +18,10 @@ function App() {
     socket.on('card:created', data => console.log('Card created:', data))
     socket.on('card:updated', data => console.log('Card updated:', data))
     socket.on('card:deleted', data => console.log('Card deleted:', data))
+
+    socket.on('board:updated', (data) => {
+      console.log('Received board update:', data)
+    })
   
     return () => {
       socket.off('connect')
@@ -30,6 +34,8 @@ function App() {
       socket.off('card:created')
       socket.off('card:updated')
       socket.off('card:deleted')
+
+      socket.off('board:updated')
     }
   }, [])
 

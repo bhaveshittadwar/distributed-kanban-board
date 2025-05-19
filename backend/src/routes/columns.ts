@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import Column from '../models/Column';
+import getBoard from '../utils/getBoard';
 
 const router = Router();
 
@@ -8,6 +9,8 @@ router.post('/', async(req: Request, res: Response, next: NextFunction): Promise
     try {
         const col = await Column.create(req.body);
         req.app.get('io').emit('column:created', col)
+        const board = await getBoard()
+        req.app.get('io').emit('board:updated', board)
         res.status(201).json(col);
     } catch (error) {
         next(error);
@@ -40,6 +43,8 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
             return
         }
         req.app.get('io').emit('column:updated', col)
+        const board = await getBoard()
+        req.app.get('io').emit('board:updated', board)
         res.json(col)
       } catch (err) {
         next(err)
@@ -51,6 +56,8 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction): P
     try {
         await Column.findByIdAndDelete(req.params.id)
         req.app.get('io').emit('column:deleted', {id: req.params.id})
+        const board = await getBoard()
+        req.app.get('io').emit('board:updated', board)
         res.status(204).end()
     } catch (err) {
         next(err)
