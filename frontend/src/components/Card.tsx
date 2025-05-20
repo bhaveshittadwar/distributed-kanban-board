@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import API from '../lib/api'
 import type { Card as CardType } from '../types'
+import { Edit3, Trash2 } from 'lucide-react'
 
 type Props = {
   data: CardType
@@ -30,6 +31,7 @@ export default function Card({ data }: Props) {
     <div className="card">
       {isEditing ? (
         <input
+          className="card-title-input"
           value={title}
           onChange={e => setTitle(e.target.value)}
           onBlur={handleEdit}
@@ -37,9 +39,18 @@ export default function Card({ data }: Props) {
           autoFocus
         />
       ) : (
-        <p onClick={() => setIsEditing(true)}>{data.title}</p>
+        <p className="card-title">{title}</p>
       )}
-      <button onClick={handleDelete}>🗑️</button>
+      <div className="card-actions">
+        {!isEditing && (
+          <button className="icon-button" onClick={() => setIsEditing(true)}>
+            <Edit3 size={16} />
+          </button>
+        )}
+        <button className="icon-button" onClick={handleDelete}>
+          <Trash2 size={16} />
+        </button>
+      </div>
     </div>
   )
 }
