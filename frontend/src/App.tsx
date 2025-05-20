@@ -13,17 +13,17 @@ export default function App() {
   const [columns, setColumns] = useState<ColumnType[]>([])
   const [newCol, setNewCol] = useState('')
   const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [showNewColInput, setShowNewColInput] = useState(false)
 
   useEffect(() => {
     socket.on('connect', () => {
       console.log('Socket connected:', socket.id)
     })
-
     socket.on('board:updated', (data: ColumnType[]) => {
       setColumns(data)
     })
 
-    if (window.location.pathname === '/') {
+    if (location.pathname === '/') {
       API.get('/me')
         .then(res => {
           setUserEmail(res.data.email)
@@ -31,6 +31,7 @@ export default function App() {
         })
         .then(res => setColumns(res.data))
         .catch(() => {
+          setUserEmail(null)
           navigate('/login')
         })
     }
@@ -47,10 +48,9 @@ export default function App() {
     setNewCol('')
   }
 
-  const handleLogout = async () => {
+  const logout = async () => {
     await API.post('/logout')
-    setUserEmail(null)
-    navigate('/login')
+    window.location.reload()
   }
 
   return (
@@ -59,23 +59,35 @@ export default function App() {
         path="/"
         element={
           userEmail ? (
-            <div>
-              <h1>Distributed Kanban MVP</h1>
-              <p>👤 Logged in as {userEmail}</p>
-              <button onClick={handleLogout}>Log Out</button>
+            <div className="app-container">
+              <div className="header">
+                <h1>Distributed Kanban MVP</h1>
+                <div className="user-info">
+                  <span>👤 {userEmail}</span>
+                  <button onClick={logout}>Log Out</button>
+                </div>
+              </div>
 
               <div className="board">
                 {columns.map(col => (
                   <Column key={col._id} data={col} />
                 ))}
+                <div className="column new-column">
+                  {showNewColInput ? (
+                    <>
+                      <input
+                        value={newCol}
+                        onChange={e => setNewCol(e.target.value)}
+                        placeholder="New column title"
+                      />
+                      <button onClick={handleCreateColumn}>Create</button>
+                      <button onClick={() => setShowNewColInput(false)}>Cancel</button>
+                    </>
+                  ) : (
+                    <button onClick={() => setShowNewColInput(true)}>+ Add Column</button>
+                  )}
+                </div>
               </div>
-
-              <input
-                value={newCol}
-                onChange={e => setNewCol(e.target.value)}
-                placeholder="New column title"
-              />
-              <button onClick={handleCreateColumn}>Add Column</button>
             </div>
           ) : null
         }
