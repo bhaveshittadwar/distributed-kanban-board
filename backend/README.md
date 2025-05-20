@@ -1,44 +1,44 @@
 # Kanban Board API
 
-A Node.js + Express + TypeScript backend for a real-time collaborative Kanban board MVP.
+A Node.js + Express + TypeScript backend powering a real-time collaborative Kanban board.
 
 ---
 
 ## Overview
 
-This service provides:
+This service includes:
 
-- User authentication (email/password via passport-local, Google OAuth 2.0)  
-- CRUD operations for Columns and Cards  
-- A consolidated `/board` endpoint returning all columns with their cards  
-- **Optimistic concurrency control** using Mongoose’s version key (`__v`)  
-- **Real-time sync foundation** with Socket.io
+- User authentication (local via `passport-local`, Google via `passport-google-oauth20`)
+- CRUD for Columns and Cards with real-time sync via Socket.io
+- Optimistic concurrency using Mongoose’s version key (`__v`)
+- Aggregated `/board` route returning columns with their cards
 
 ---
 
 ## Environment
 
-Create a `.env` file at the project root with:
+Place a `.env` file at the project root:
 
 ~~~bash
 MONGO_URL=mongodb://mongo:27017/kanban
-GOOGLE_CLIENT_ID=YOUR_CLIENT_ID
-GOOGLE_CLIENT_SECRET=YOUR_CLIENT_SECRET
+GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET
 GOOGLE_CALLBACK_URL=http://localhost:5001/auth/google/callback
 SESSION_SECRET=your_session_secret
+CLIENT_ORIGIN=http://localhost:3000
 ~~~
 
 ---
 
-## Installation & Run
+## Run
 
 ~~~bash
-# in backend/
+# Local run (in backend/)
 npm install
-npm run build       # compiles TS to dist/
-npm start           # runs dist/index.js
+npm run build
+npm start
 
-# or with Docker Compose from project root:
+# Or with Docker (from root)
 docker-compose up --build api
 ~~~
 
@@ -48,16 +48,12 @@ docker-compose up --build api
 
 ### Auth
 
-- `POST /signup`  
-  - Body: `{ email: string, password: string }`  
-  - Response: `{ email: string }`
-
-- `POST /login`  
-  - Body: `{ email: string, password: string }`  
-  - Response: `{ email: string }`
-
-- `GET /auth/google` → starts Google OAuth  
-- `GET /auth/google/callback` → Google redirects here, then forwards to frontend
+- `POST /signup` — `{ email, password }` → `{ email }`  
+- `POST /login`  — `{ email, password }` → `{ email }`  
+- `GET /auth/google` — start Google OAuth  
+- `GET /auth/google/callback` — OAuth redirect  
+- `POST /logout` — destroys session  
+- `GET /me` — returns `{ email }` if logged in
 
 ---
 
@@ -65,7 +61,7 @@ docker-compose up --build api
 
 - `POST /columns`  
 - `GET /columns`  
-- `PUT  /columns/:id` *(optimistic versioning — client must include last-seen `__v`)*  
+- `PUT  /columns/:id` — must include `__v`  
 - `DELETE /columns/:id`
 
 ---
@@ -74,29 +70,29 @@ docker-compose up --build api
 
 - `POST /cards`  
 - `GET  /cards/column/:columnId`  
-- `PUT  /cards/:id` *(optimistic versioning — client must include last-seen `__v`)*  
+- `PUT  /cards/:id` — must include `__v`  
 - `DELETE /cards/:id`
 
 ---
 
 ### Board
 
-- `GET /board`  
-  Returns an array of columns, each with a `cards` array.
+- `GET /board` — returns all columns with embedded cards
 
 ---
 
-## Optimistic Concurrency Control
+## Optimistic Concurrency
 
-- Update routes (`PUT`) match on the client’s last-seen `__v`
-- DB increments version with `$inc: { __v: 1 }` only on successful match
-- Prevents silent overwrites
-- Returns `409 Conflict` if there's a version mismatch
+- All updates use `{ _id, __v }` match  
+- Successful writes increment version: `$inc: { __v: 1 }`  
+- Fails with `409 Conflict` if version has changed
 
 ---
 
-## Real-time Events (via Socket.io)
+## Real-time Sync
 
-- Server initialized Socket.io alongside Express
-- `/test-socket` emits `test-event` to all connected clients
-- Clients listen on `test-event` to confirm real-time capability
+- Server initializes Socket.io over same HTTP server
+- Events:
+  - `column:created`, `column:updated`, `column:deleted`
+  - `card:created`, `card:updated`, `card:deleted`
+  - `board:updated` for full state
