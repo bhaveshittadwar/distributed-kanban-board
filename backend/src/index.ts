@@ -1,11 +1,13 @@
 import { createServer } from 'http'
 import { Server } from 'socket.io'
+import cors from 'cors'
 
 import express, { Request, Response, NextFunction } from 'express'
 import session from 'express-session'
 import passport from './auth/passport' // local
 import './auth/google' // google
 import User from './models/User'
+import { isAuthenticated } from './middleware/auth'
 
 // routers
 import columnsRouter from './routes/columns'
@@ -19,6 +21,11 @@ app.use(session({
   secret: 'secret_for_session_123123123',
   resave: false,
   saveUninitialized: false
+}))
+
+app.use(cors({
+  origin: process.env.CLIENT_ORIGIN,
+  credentials: true
 }))
 
 app.use(passport.initialize())
@@ -54,6 +61,7 @@ app.post('/login',
   }
 )
 
+
 app.get(
   '/auth/google',
   passport.authenticate('google', { scope: ['email'] })
@@ -68,15 +76,31 @@ app.get(
   }
 )
 
+app.post('/logout', (req: Request, res: Response) => {
+  req.logout(err => {
+    if (err) return res.status(500).json({ message: 'Logout failed' })
+    res.clearCookie('connect.sid')
+    res.status(200).json({ message: 'Logged out' })
+  })
+})
+
+app.get('/me', (req: Request, res: Response) => {
+  if (!req.user) {
+    res.status(401).json({ message: 'Not logged in' })
+    return
+  }
+  res.json({ email: (req.user as any).email })
+})
+
 app.post('/test-socket', (req: Request, res: Response) => {
   const io = req.app.get('io')
   io.emit('test-event', {message: 'Socket.io works!'})
   res.send('Emitted test-event')
 })
 
-app.use('/columns', columnsRouter)
-app.use('/cards', cardsRouter)
-app.use('/board', boardRouter)
+app.use('/columns', isAuthenticated, columnsRouter)
+app.use('/cards', isAuthenticated, cardsRouter)
+app.use('/board', isAuthenticated, boardRouter)
 
 const server = createServer(app)
 const io = new Server(server, {
