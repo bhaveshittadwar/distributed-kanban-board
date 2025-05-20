@@ -1,28 +1,27 @@
-// frontend/src/pages/Signup.tsx
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
 import API from '../lib/api'
+import { Link, useNavigate } from 'react-router-dom'
 
 export default function Signup() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
       await API.post('/signup', { email, password })
       navigate('/')
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Signup failed')
+      setError(err?.response?.data?.message || 'Signup failed')
     }
   }
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <div className="auth-container">
       <h2>Sign Up</h2>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+      <form onSubmit={handleSignup} className="auth-form">
         <input
           type="email"
           placeholder="Email"
@@ -38,11 +37,11 @@ export default function Signup() {
           required
         />
         <button type="submit">Sign Up</button>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
       </form>
       <p>
-        Already have an account? <Link to="/login">Log in</Link>
+        Already have an account? <Link to="/login">Log in here</Link>
       </p>
+      {error && <p className="error-text">{error}</p>}
     </div>
   )
 }

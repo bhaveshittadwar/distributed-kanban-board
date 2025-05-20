@@ -1,54 +1,50 @@
-// frontend/src/pages/Login.tsx
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
 import API from '../lib/api'
+import { Link } from 'react-router-dom'
 
 export default function Login() {
-  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     try {
       await API.post('/login', { email, password })
-      navigate('/')
+      window.location.href = '/'
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Login failed')
     }
   }
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <div className="auth-container">
       <h2>Log In</h2>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+      <form onSubmit={handleLogin} className="auth-form">
         <input
+          type="email"
+          placeholder="Email"
           value={email}
           onChange={e => setEmail(e.target.value)}
-          placeholder="Email"
-          type="email"
           required
         />
         <input
+          type="password"
+          placeholder="Password"
           value={password}
           onChange={e => setPassword(e.target.value)}
-          placeholder="Password"
-          type="password"
           required
         />
         <button type="submit">Log In</button>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
       </form>
-      <p style={{ marginTop: '1rem' }}>
-        Don't have an account? <Link to="/signup">Sign up here</Link>
+      <p>
+        Don’t have an account? <Link to="/signup">Sign up here</Link>
       </p>
-      <a href={`${import.meta.env.VITE_API_URL ?? 'http://localhost:5001'}/auth/google`}>
-        <button style={{ marginTop: '1rem' }}>
-          Continue with Google
-        </button>
+      <a href={`${import.meta.env.VITE_API_URL}/auth/google`}>
+        <button className="google-button">Continue with Google</button>
       </a>
+      {error && <p className="error-text">{error}</p>}
     </div>
   )
 }
