@@ -12,7 +12,7 @@ This application is a real‑time collaborative Kanban board. Authenticated user
 - Create boards with multiple columns  
 - Add, edit, and move cards between columns  
 - See live updates when other users make changes  
-- (Drag‑and‑drop support will be added in Phase 2)
+- (Drag‑and‑drop support will be added later)
 
 ---
 
@@ -20,20 +20,16 @@ This application is a real‑time collaborative Kanban board. Authenticated user
 
 - **Frontend:** React + Vite + TypeScript  
 - **Backend:** Node.js + Express + TypeScript  
-- **Database:** MongoDB (no change streams for MVP)  
+- **Database:** MongoDB  
 - **Real‑time sync:** Socket.io  
 - **Auth:**  
-  1. Local (email/password via passport‑local)  
+  1. Local (email/password via `passport‑local`)  
   2. Google OAuth 2.0  
-- **Concurrency:** Optimistic versioning on Columns & Cards (409 on conflict)  
+- **Concurrency:** Optimistic versioning on Columns & Cards (`409 Conflict`)  
 - **Dev setup:** Docker Compose orchestrating:
   - MongoDB  
   - API service (host 5001 → container 5000)  
   - Frontend service (host 3000 → container 5173)  
-- **Future phase:**
-  - MongoDB change streams  
-  - Microservices & Kubernetes  
-  - Optimistic UI + drag‑and‑drop integration  
 
 ---
 
@@ -58,35 +54,26 @@ From repo root:
 docker-compose up --build -d
 ~~~
 
-- **Health check (backend):** `http://localhost:5001/` → “OK”  
-- **Frontend UI:** `http://localhost:3000/`  
+- **Backend API:** `http://localhost:5001/` → “OK”  
+- **Frontend UI:** `http://localhost:3000/`
 
 ---
 
 ## Work Completed
 
-- Git repo with `backend/` & `frontend/`  
-- `docker-compose.yml`: Mongo, API (5001→5000), Frontend (3000→5173)
-
-- `backend/src/index.ts`: minimal Express+TS, health-check route  
-- `backend/Dockerfile`
-
-- Vite React‑TS app in `frontend/`  
-- `frontend/Dockerfile`
-
-- Local auth: `passport-local`, `express-session`, `bcrypt`  
-- `User` model with conditional `password` (required if no `googleId`)  
-- `/signup` & `/login` routes  
-- `src/auth/passport.ts`
-
-- Google OAuth setup with `passport-google-oauth20`  
-- `src/auth/google.ts`: strategy using `googleId`  
-- `/auth/google` & `/auth/google/callback` routes
-
-- Socket.io setup for real-time testing  
-  - `/test-socket` POST route emits `test-event`  
-  - Frontend listens for `test-event`  
-  - Verified full round-trip sync
+- Project scaffold with `backend/`, `frontend/`, and `docker-compose.yml`
+- Backend:
+  - Express app with session + passport setup
+  - Auth routes for `/signup`, `/login`, `/auth/google`
+  - MongoDB models for `User`, `Column`, and `Card`
+  - CRUD routes with optimistic versioning + real-time emits
+  - Socket.io configured on shared HTTP server
+- Frontend:
+  - React + Vite app with `App.tsx` as main container
+  - Modular components for `Column`, `Card`, `Login`, `Signup`
+  - Auth-aware routing using `react-router-dom`
+  - Socket.io client with board sync + updates
+  - Reusable Axios instance with cookie/session support
 
 ---
 
@@ -100,3 +87,8 @@ frontend/node_modules/
 .DS_Store
 .vscode/
 ~~~
+
+## Subproject Docs
+
+- [`backend/README.md`](./backend/README.md)
+- [`frontend/README.md`](./frontend/README.md)
