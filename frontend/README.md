@@ -8,7 +8,7 @@ React + Vite + TypeScript client for the **Distributed Kanban Board**.
 
 | Service   | URL                                                         |
 |-----------|-------------------------------------------------------------|
-| Frontend  | https://kanban-frontend.fly.dev                              |
+| Frontend  | https://kanban-ui.fly.dev/                              |
 
 ---
 

@@ -8,7 +8,7 @@
 
 | Service   | URL                                                         |
 |-----------|-------------------------------------------------------------|
-| Frontend  | https://kanban-frontend.fly.dev                             |
+| Frontend  | https://kanban-ui.fly.dev/                             |
 | Backend   | https://backend-morning-resonance-6865.fly.dev              |
 
 *(Both run on Fly.io’s free tier.)*
