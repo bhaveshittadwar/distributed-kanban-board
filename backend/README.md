@@ -109,3 +109,7 @@ Socket.io events:
 - board:updated (full board refresh)
 
 ---
+
+## License
+
+MIT
