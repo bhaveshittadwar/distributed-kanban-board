@@ -1,46 +1,68 @@
 # Kanban Board Frontend
 
-A React + Vite + TypeScript frontend for a real-time collaborative Kanban board.
+React + Vite + TypeScript client for the **Distributed Kanban Board**.
+
+---
+
+## 🌐 Live URLs
+
+| Service   | URL                                                         |
+|-----------|-------------------------------------------------------------|
+| Frontend  | https://kanban-frontend.fly.dev                              |
 
 ---
 
 ## Features
 
-- Create, edit, delete columns and cards
-- Real-time sync across clients via Socket.io
-- User authentication (email/password + Google OAuth 2.0)
-- Protected routes based on login status
-- Auto reload on login/signup/logout
-- Simple routing with React Router
+- Create, edit, delete columns & cards  
+- Real-time updates via Socket.io  
+- Email/password **and** Google OAuth 2.0 authentication  
+- Protected routes that redirect unauthenticated users  
+- Automatic UI refresh on login / logout  
+- Clean routing with React Router v6
 
 ---
 
 ## Tech Stack
 
-- React 19 + Vite + TypeScript
-- Axios for API calls
-- Socket.io client for real-time events
-- React Router for client-side routing
+- React 19, Vite, TypeScript  
+- Axios for REST calls  
+- Socket.io-client for web-socket events  
+- React Router for SPA navigation
 
 ---
 
 ## Project Structure
 
-- `App.tsx` — Main logic and routing
-- `components/` — UI components like `Column`, `Card`, `Login`, `Signup`
-- `lib/api.ts` — Axios instance with baseURL and credentials
-- `socket.ts` — Socket.io client instance
-- `types.ts` — Shared TS types for Column and Card
+~~~text
+frontend/
+├── src/
+│   ├── App.tsx            # Main router & layout
+│   ├── components/        # Column, Card, Login, Signup …
+│   ├── lib/
+│   │   └── api.ts         # Axios instance
+│   ├── socket.ts          # Singleton socket.io client
+│   └── types.ts           # Shared domain types
+└── vite.config.ts
+~~~
 
 ---
 
 ## Environment
 
-Create a `.env` file inside `frontend/`:
+Create `frontend/.env` :
 
 ~~~bash
 VITE_API_URL=http://localhost:5001
 VITE_SOCKET_URL=http://localhost:5001
+~~~
+
+For Fly.io production deploys:
+
+~~~bash
+flyctl secrets set \
+  VITE_API_URL=https://backend-morning-resonance-6865.fly.dev \
+  VITE_SOCKET_URL=https://backend-morning-resonance-6865.fly.dev
 ~~~
 
 ---
@@ -48,41 +70,56 @@ VITE_SOCKET_URL=http://localhost:5001
 ## Development
 
 ~~~bash
-# From frontend/
+cd frontend
 npm install
-npm run dev
+npm run dev          # served at http://localhost:5173
 ~~~
 
-You can also run it via Docker Compose from the root:
+or via Docker Compose from repo root:
 
 ~~~bash
-docker-compose up --build frontend
+docker compose up --build frontend
 ~~~
 
 ---
 
 ## Routing
 
-- `/` — Protected board UI (requires login)
-- `/login` — Login and signup form
-- `/signup` — (Optional, accessible via `/login` toggle)
+| Path     | Description                          |
+|----------|--------------------------------------|
+| `/`      | Protected Kanban board UI           |
+| `/login` | Login & signup (toggle inside)      |
+| `/signup`| Optional explicit signup route      |
 
 ---
 
-## Realtime Events
+## Real-time Events
 
-Socket.io listens for:
+Socket.io channels:
 
-- `board:updated`
-- `column:created`, `column:updated`, `column:deleted`
-- `card:created`, `card:updated`, `card:deleted`
+- `board:updated`  
+- `column:created`, `column:updated`, `column:deleted`  
+- `card:created`,   `card:updated`,   `card:deleted`
 
-All changes are reflected live across sessions.
+Updates propagate instantly to all connected clients.
 
 ---
 
 ## Auth Flow
 
-- App checks `/me` on load
-- If not logged in, redirects to `/login`
-- Supports both manual signup/login and Google OAuth login
+1. On boot, app fetches `/me`; redirects to `/login` if 401.  
+2. User logs in via form **or** Google OAuth popup.  
+3. Successful auth sets session cookie → UI reloads to board.  
+4. Logout clears session and redirects to `/login`.
+
+---
+
+## Repository
+
+GitHub: https://github.com/bhaveshittadwar/distributed-kanban-board
+
+---
+
+## License
+
+MIT
