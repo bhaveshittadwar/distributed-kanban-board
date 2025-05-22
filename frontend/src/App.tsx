@@ -26,6 +26,7 @@ export default function App() {
     if (location.pathname === '/') {
       API.get('/me')
         .then(res => {
+          socket.connect()
           setUserEmail(res.data.email)
           return API.get('/board')
         })
@@ -49,6 +50,7 @@ export default function App() {
   }
 
   const logout = async () => {
+    socket.disconnect()
     await API.post('/logout')
     window.location.reload()
   }
