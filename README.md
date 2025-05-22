@@ -1,4 +1,4 @@
-# Distributed Kanban Board
+# Real-time Kanban Board
 
 **MVP 1: Real-time collaborative Kanban board**
 
