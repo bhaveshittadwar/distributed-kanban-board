@@ -1,0 +1,17 @@
+app = "kanban-ui"
+primary_region = "atl"
+
+[build]
+  [build.args]
+    VITE_API_URL   = "https://backend-morning-resonance-6865.fly.dev"
+    VITE_SOCKET_URL = "wss://backend-morning-resonance-6865.fly.dev"
+
+[[services]]
+  internal_port = 80
+  protocol = "tcp"
+  [[services.ports]]
+    handlers = ["http"]
+    port = 80
+  [[services.ports]]
+    handlers = ["tls","http"]
+    port = 443
