@@ -2,6 +2,9 @@ import { createServer } from 'http'
 import { Server } from 'socket.io'
 import cors from 'cors'
 
+import dotenv from 'dotenv'
+dotenv.config()
+
 import express, { Request, Response, NextFunction } from 'express'
 import session from 'express-session'
 import passport from './auth/passport' // local
@@ -15,13 +18,26 @@ import cardsRouter from './routes/cards'
 import boardRouter from './routes/board'
 
 import mongoose from 'mongoose'
+import cookieParser from 'cookie-parser'
 
 const app = express()
-app.use(session({
-  secret: 'secret_for_session_123123123',
-  resave: false,
-  saveUninitialized: false
-}))
+
+app.use(cookieParser())
+
+app.set('trust proxy', 1);
+
+const prod = process.env.NODE_ENV === 'production';
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET!,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: prod,
+      sameSite: prod ? 'none' : 'lax'
+    }
+  })
+);
 
 app.use(cors({
   origin: process.env.CLIENT_ORIGIN,
@@ -72,7 +88,7 @@ app.get(
   '/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
   (_req: Request, res: Response) => {
-    res.redirect('http://localhost:3000')
+    res.redirect(process.env.CLIENT_ORIGIN!)
   }
 )
 
@@ -119,7 +135,7 @@ io.on('connection', socket => {
 
 app.set('io', io)
 
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 8080
 server.listen(PORT, () => {
   console.log(`API + Socket.io running on ${PORT}`)
 })
