@@ -119,4 +119,7 @@ io.on('connection', socket => {
 
 app.set('io', io)
 
-server.listen(5000, () => console.log('API + Socket.io running on 5000'))
+const PORT = process.env.PORT || 5000
+server.listen(PORT, () => {
+  console.log(`API + Socket.io running on ${PORT}`)
+})
