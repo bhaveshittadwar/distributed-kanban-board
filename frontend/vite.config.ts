@@ -6,12 +6,14 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     server: {
+      host: '0.0.0.0',
+      port: 5173,
       allowedHosts: [env.VITE_ALLOWED_HOST],
       proxy: {
         '/api': {
-          target: 'http://localhost:5001',
+          target: 'http://api:5000',
           changeOrigin: true,
-          rewrite: path => path.replace(/^\/api/, '')
+          rewrite: p => p.replace(/^\/api/, '')
         }
       }
     }
