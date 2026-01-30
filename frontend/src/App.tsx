@@ -14,6 +14,7 @@ export default function App() {
   const [newCol, setNewCol] = useState('')
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [showNewColInput, setShowNewColInput] = useState(false)
+  const[users, setUsers] = useState<string[]>([]);
 
   useEffect(() => {
     socket.on('connect', () => {
@@ -21,6 +22,9 @@ export default function App() {
     })
     socket.on('board:updated', (data: ColumnType[]) => {
       setColumns(data)
+    })
+    socket.on('users-update', (data) => {
+      setUsers(data.users)
     })
 
     if (location.pathname === '/') {
@@ -64,6 +68,10 @@ export default function App() {
             <div className="app-container">
               <div className="header">
                 <h1>Distributed Kanban MVP</h1>
+                {users && (
+                  <div>users live: {users.length}</div>
+                )}
+
                 <div className="user-info">
                   <span>👤 {userEmail}</span>
                   <button onClick={logout}>Log Out</button>
@@ -90,6 +98,16 @@ export default function App() {
                   )}
                 </div>
               </div>
+              {users.length > 0 && (
+                <>
+                <h2>Live Users Email List: </h2>
+                <ul>
+                  {users.map(user => (
+                    <li key={user}>{user}</li>
+                  ))}
+                </ul>
+                </>
+              )}
             </div>
           ) : null
         }

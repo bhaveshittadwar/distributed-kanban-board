@@ -27,17 +27,16 @@ app.use(cookieParser())
 app.set('trust proxy', 1);
 
 const prod = process.env.NODE_ENV === 'production';
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET!,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: prod,
-      sameSite: prod ? 'none' : 'lax'
-    }
-  })
-);
+const sessionMiddleware = session({
+  secret: process.env.SESSION_SECRET!,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: prod,
+    sameSite: prod ? 'none' : 'lax'
+  }
+})
+app.use(sessionMiddleware);
 
 app.use(cors({
   origin: process.env.CLIENT_ORIGIN,
@@ -126,9 +125,41 @@ const io = new Server(server, {
   }
 })
 
+io.engine.use(sessionMiddleware);
+io.engine.use(passport.initialize())
+io.engine.use(passport.session())
+
+let map = new Map<string, number>()
+
+const manageConnect = (socket) => {
+  const user = socket.request.user
+  if(!user) return
+
+  const email = user.email
+
+  let val = map.get(email) ?? 0
+
+  map.set(email, val + 1)
+  io.emit('users-update', {users: [...map.keys()]})
+}
+
+const manageDisconnect = (socket) => {
+  const user = socket.request.user
+  if(!user) return
+
+  const email = user.email
+
+  let val = map.get(email) ?? 0
+  if(val <= 1) map.delete(email)
+  else map.set(email, val - 1)
+  io.emit('users-update', {users: [...map.keys()]})
+}
+
 io.on('connection', socket => {
+  manageConnect(socket)
   console.log('Socket connected: ', socket.id)
   socket.on('disconnect', () => {
+    manageDisconnect(socket)
     console.log('Socket disconnected: ', socket.id)
   })
 })
